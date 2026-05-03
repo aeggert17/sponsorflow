@@ -8,7 +8,10 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+@property
+def is_active(self):
+    return True
+    
 class SponsorshipRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     organization = db.Column(db.String(200), nullable=False)
