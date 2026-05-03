@@ -81,7 +81,8 @@
                         </td>
                         <td><strong>{{ item.request.organization }}</strong></td>
                         <td>{{ item.request.request_type }}</td>
-<td><span class="badge bg-secondary">{{ item.request.status }}</span></td>                        <td class="text-danger">{{ item.reason }}</td>
+                        <td><span class="badge status-badge bg-{{ 'secondary' if item.request.status == 'Pending' else ('info' if item.request.status == 'Under Review' else ('success' if item.request.status == 'Approved' else ('danger' if item.request.status == 'Denied' else ('primary' if item.request.status == 'Paid' else 'dark'))) }}">{{ item.request.status }}</span></td>
+                        <td class="text-danger">{{ item.reason }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
