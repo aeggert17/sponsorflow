@@ -1,0 +1,17 @@
+# Render Blueprint
+# Deploy SponsorFlow to Render (Free Tier)
+
+services:
+  - type: web
+    name: sponsorflow
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    plan: free
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///sponsorflow.db
