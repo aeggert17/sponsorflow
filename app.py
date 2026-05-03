@@ -17,6 +17,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+with app.app_context():
+    db.create_all()
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -222,14 +224,7 @@ def process_import():
     return redirect(url_for('dashboard'))
 from models import User, SponsorshipRequest
 
-_tables_created = False
 
-@app.before_request
-def create_tables():
-    global _tables_created
-    if not _tables_created:
-        db.create_all()
-        _tables_created = True
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
