@@ -1,0 +1,11 @@
+Business/Organization,Type of Request,Date Requested,Event Date,Request Originator,Suggested Support,Comments,Actual Support,Approved by,Approval,Flyer Link,Marketing Follow-up,Submitted to Accounting,Date submitted
+Acme Corp,Sponsorship,2023-10-01,2023-11-15,John Doe,1000,Great opportunity for community event,800,Jane Smith,Approved,http://example.com/flyer1,Completed,Yes,2023-10-10
+Globex Inc,Donation,2023-10-05,2023-12-01,Bob Ross,500,Charity drive for local shelter,500,Jane Smith,Approved,http://example.com/flyer2,In Progress,No,
+Stark Industries,Event Support,2023-11-10,2024-01-20,Tony Stark,5000,Tech expo platinum sponsorship,0,,Pending,http://example.com/stark-expo,,No,
+Oscorp Labs,Other,2023-11-15,2024-02-10,Norman Osborn,2000,Science fair lab sponsorship,2000,Jane Smith,Paid,http://example.com/flyer3,Not Started,Yes,2023-11-20
+Initech,Sponsorship,2023-12-01,2023-12-15,Bill Lumbergh,300,Office holiday party,0,,Denied,,,No,
+Wayne Enterprises,Donation,2024-01-10,2024-03-15,Bruce Wayne,10000,Gotham community fund,10000,Alfred Pennyworth,Approved,http://example.com/wayne-fund,Completed,Yes,2024-01-12
+Cyberdyne Systems,Event Support,2024-01-20,2024-04-01,Sarah Connor,7500,Tech conference keynote,5000,,Approved,http://example.com/cyberdyne-con,In Progress,No,
+Massive Dynamic,Donation,2024-02-01,2024-05-20,Wilson Fisk,2500,Art museum donation drive,2500,Nikki,Paid,http://example.com/md-art,Completed,Yes,2024-02-05
+Umbrella Corp,Other,2024-02-15,2024-06-01,Albert Wesker,1500,Research grant,0,,Denied,,,No,
+Prestige Worldwide,Sponsorship,2024-03-01,2024-07-04,Tommy Morris,6000,Independence day parade,4500,Carol,Approved,http://example.com/parade,Not Started,No,
