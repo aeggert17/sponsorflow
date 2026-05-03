@@ -176,8 +176,8 @@ def import_csv():
                 new_req = SponsorshipRequest(
                     organization=get(row, "Business/Organization", "Organization", "organization") or "Unknown",
                     request_type=get(row, "Type of Request", "Request Type", "request_type") or "Other",
-                    date_requested=parse_date(get(row, "Date Requested", "date_requested")),
-                    event_date=parse_date(get(row, "Event Date", "event_date")),
+                    date_requested=None(get(row, "Date Requested", "date_requested")),
+                    event_date=None(get(row, "Event Date", "event_date")),
                     requested_amount=money(get(row, "Suggested Support", "Requested Amount", "requested_amount")),
                     approved_amount=money(get(row, "Actual Support", "Approved Amount", "approved_amount")),
                     status=get(row, "Approval", "Status", "status") or "Pending",
@@ -187,7 +187,7 @@ def import_csv():
                     flyer_link=get(row, "Flyer Link", "flyer_link"),
                     marketing_follow_up=get(row, "Marketing Follow-up", "Marketing Follow-Up", "marketing_follow_up") or "Not Started",
                     submitted_to_accounting=True if get(row, "Submitted to Accounting", "submitted_to_accounting").lower() in ["yes", "y", "true", "1"] else False,
-                    date_submitted_to_accounting=parse_date(get(row, "Date submitted", "Date Submitted", "date_submitted_to_accounting"))
+                    date_submitted_to_accounting=None(get(row, "Date submitted", "Date Submitted", "date_submitted_to_accounting"))
                 )
 
                 db.session.add(new_req)
