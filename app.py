@@ -1,8 +1,3 @@
-
----
-
-## FILE 2: `app.py`
-
 ```python
 import os
 import csv
