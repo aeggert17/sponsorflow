@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ 'Edit Request' if req else 'New Sponsorship Request' }}</h4>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-secondary">Back to Dashboard</a>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Business/Organization *</label>
+                            <input type="text" name="organization" class="form-control" value="{{ req.organization if req else '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Request Type</label>
+                            <select name="request_type" class="form-select">
+                                <option value="Sponsorship" {% if req and req.request_type == 'Sponsorship' %}selected{% endif %}>Sponsorship</option>
+                                <option value="Donation" {% if req and req.request_type == 'Donation' %}selected{% endif %}>Donation</option>
+                                <option value="Event Support" {% if req and req.request_type == 'Event Support' %}selected{% endif %}>Event Support</option>
+                                <option value="Other" {% if req and req.request_type == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Date Requested</label>
+                            <input type="date" name="date_requested" class="form-control" value="{{ req.date_requested.isoformat() if req and req.date_requested else '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Event Date</label>
+                            <input type="date" name="event_date" class="form-control" value="{{ req.event_date.isoformat() if req and req.event_date else '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Request Originator</label>
+                            <input type="text" name="requested_by" class="form-control" value="{{ req.requested_by if req else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Suggested Support (Requested Amount)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" name="requested_amount" class="form-control" value="{{ req.requested_amount if req else '0.00' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Actual Support (Approved Amount)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" name="approved_amount" class="form-control" value="{{ req.approved_amount if req else '0.00' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Approval Status</label>
+                            <select name="status" class="form-select">
+                                <option value="Pending" {% if req and req.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="Under Review" {% if req and req.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                                <option value="Approved" {% if req and req.status == 'Approved' %}selected{% endif %}>Approved</option>
+                                <option value="Denied" {% if req and req.status == 'Denied' %}selected{% endif %}>Denied</option>
+                                <option value="Paid" {% if req and req.status == 'Paid' %}selected{% endif %}>Paid</option>
+                                <option value="Completed" {% if req and req.status == 'Completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Approved By</label>
+                            <input type="text" name="approved_by" class="form-control" value="{{ req.approved_by if req else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Flyer Link (URL)</label>
+                            <input type="url" name="flyer_link" class="form-control" value="{{ req.flyer_link if req else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Comments</label>
+                        <textarea name="comments" class="form-control" rows="3">{{ req.comments if req else '' }}</textarea>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Marketing Follow-up</label>
+                            <select name="marketing_follow_up" class="form-select">
+                                <option value="Not Started" {% if req and req.marketing_follow_up == 'Not Started' %}selected{% endif %}>Not Started</option>
+                                <option value="In Progress" {% if req and req.marketing_follow_up == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                <option value="Completed" {% if req and req.marketing_follow_up == 'Completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 pt-4">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" name="submitted_to_accounting" id="accountingCheck" {% if req and req.submitted_to_accounting %}checked{% endif %}>
+                                <label class="form-check-label" for="accountingCheck">
+                                    Submitted to Accounting
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Date Submitted to Accounting</label>
+                            <input type="date" name="date_submitted_to_accounting" class="form-control" value="{{ req.date_submitted_to_accounting.isoformat() if req and req.date_submitted_to_accounting else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Save Record</button>
+                    </div>
+                </form>
+                {% if req %}
+                <hr>
+                <form action="{{ url_for('delete_request', id=req.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this request?');">
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-outline-danger">Delete Record</button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
