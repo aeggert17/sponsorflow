@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h4 class="mb-4 text-center">Import Sponsorship Data</h4>
+            <p class="text-muted text-center mb-4">Upload a CSV file to import existing sponsorship requests. You can map your columns in the next step.</p>
+            
+            <form method="POST" enctype="multipart/form-data" class="text-center">
+                <div class="mb-4">
+                    <input type="file" name="file" class="form-control" accept=".csv" required>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Upload and Map Columns</button>
+                </div>
+            </form>
+            
+            <div class="mt-4">
+                <h6>Supported Standard Columns:</h6>
+                <ul class="text-muted small">
+                    <li>Business/Organization</li>
+                    <li>Type of Request</li>
+                    <li>Date Requested</li>
+                    <li>Event Date</li>
+                    <li>Request Originator</li>
+                    <li>Suggested Support</li>
+                    <li>Comments</li>
+                    <li>Actual Support</li>
+                    <li>Approved by</li>
+                    <li>Approval</li>
+                    <li>Flyer Link</li>
+                    <li>Marketing Follow-up</li>
+                    <li>Submitted to Accounting</li>
+                    <li>Date submitted</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
