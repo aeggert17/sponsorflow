@@ -1,344 +1,62 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- Metrics Row -->
-<div class="row mb-4">
-    <div class="col-md-2 mb-3">
-        <div class="card metric-card bg-primary text-white h-100 p-3">
-            <h6 class="card-subtitle mb-2">Total Requested</h6>
-            <h4 class="card-title">${{ "{:,.2f}".format(total_requested) }}</h4>
+
+<div class="container mt-4">
+    <h3>Dashboard</h3>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card p-3 bg-primary text-white">
+                <h6>Total Requested</h6>
+                <h4>${{ total_requested }}</h4>
+            </div>
         </div>
-    </div>
-    <div class="col-md-2 mb-3">
-        <div class="card metric-card bg-success text-white h-100 p-3">
-            <h6 class="card-subtitle mb-2">Total Approved</h6>
-            <h4 class="card-title">${{ "{:,.2f}".format(total_approved) }}</h4>
+
+        <div class="col-md-3">
+            <div class="card p-3 bg-success text-white">
+                <h6>Total Approved</h6>
+                <h4>${{ total_approved }}</h4>
+            </div>
         </div>
-    </div>
-    <div class="col-md-2 mb-3">
-        <div class="card metric-card bg-warning text-dark h-100 p-3">
-            <h6 class="card-subtitle mb-2">Pending</h6>
-            <h4 class="card-title">{{ pending_count }}</h4>
+
+        <div class="col-md-3">
+            <div class="card p-3 bg-warning">
+                <h6>Pending</h6>
+                <h4>{{ pending_count }}</h4>
+            </div>
         </div>
-    </div>
-    <div class="col-md-2 mb-3">
-        <div class="card metric-card bg-info text-white h-100 p-3">
-            <h6 class="card-subtitle mb-2">Approved #</h6>
-            <h4 class="card-title">{{ approved_count }}</h4>
-        </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="card h-100 p-3">
-            <h6 class="card-subtitle mb-2 text-muted">Monthly Approved ($)</h6>
-            <div style="font-size: 0.9rem;">
-                {% for month, amount in monthly_data.items() | sort(reverse=True) %}
-                    <span class="badge bg-light text-dark border me-1 mb-1">{{ month }}: ${{ "{:,.0f}".format(amount) }}</span>
-                {% endfor %}
-                {% if not monthly_data %}
-                    <span class="text-muted">No approved requests yet</span>
-                {% endif %}
+
+        <div class="col-md-3">
+            <div class="card p-3 bg-info text-white">
+                <h6>Approved #</h6>
+                <h4>{{ approved_count }}</h4>
             </div>
         </div>
     </div>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Organization</th>
+                <th>Type</th>
+                <th>Requested</th>
+                <th>Approved</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in requests %}
+            <tr>
+                <td>{{ item.request.organization }}</td>
+                <td>{{ item.request.request_type }}</td>
+                <td>{{ item.request.requested_amount }}</td>
+                <td>{{ item.request.approved_amount }}</td>
+                <td>{{ item.request.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
-<!-- Charts Row -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card h-100 p-3">
-            <h6 class="card-subtitle mb-3 text-muted">Approved Dollars by Month</h6>
-            <canvas id="monthlyChart" height="120"></canvas>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100 p-3">
-            <h6 class="card-subtitle mb-3 text-muted">Requests by Type</h6>
-            <canvas id="typeChart" height="120"></canvas>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100 p-3">
-            <h6 class="card-subtitle mb-3 text-muted">Status Breakdown</h6>
-            <canvas id="statusChart" height="120"></canvas>
-        </div>
-    </div>
-</div>
-
-<!-- Needs Attention Section -->
-{% if needs_attention %}
-<div class="card border-warning mb-4">
-    <div class="card-header bg-warning text-dark">
-        <i class="bi bi-exclamation-triangle me-2"></i>Needs Attention ({{ needs_attention|length }})
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0 small">
-                <tbody>
-                    {% for item in needs_attention[:5] %}
-                    <tr class="clickable-row" data-href="{{ url_for('view_request', id=item.request.id) }}">
-                        <td class="text-center" style="width: 40px;">
-                            <span class="badge bg-{{ item.color }}"><i class="bi {{ item.icon }}"></i></span>
-                        </td>
-                        <td><strong>{{ item.request.organization }}</strong></td>
-                        <td>{{ item.request.request_type }}</td>
-                        <td><span class="badge status-badge bg-{{ 'secondary' if item.request.status == 'Pending' else ('info' if item.request.status == 'Under Review' else ('success' if item.request.status == 'Approved' else ('danger' if item.request.status == 'Denied' else ('primary' if item.request.status == 'Paid' else 'dark'))) }}">{{ item.request.status }}</span></td>
-                        <td class="text-danger">{{ item.reason }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Filter Bar -->
-<div class="card mb-4">
-    <div class="card-body">
-        <form class="row g-3" method="GET">
-            <div class="col-md-3">
-                <input type="text" name="search" class="form-control" placeholder="Search Organization..." value="{{ request.args.get('search', '') }}">
-            </div>
-            <div class="col-md-2">
-                <select name="type" class="form-select">
-                    <option value="">All Types</option>
-                    <option value="Sponsorship" {% if request.args.get('type') == 'Sponsorship' %}selected{% endif %}>Sponsorship</option>
-                    <option value="Donation" {% if request.args.get('type') == 'Donation' %}selected{% endif %}>Donation</option>
-                    <option value="Event Support" {% if request.args.get('type') == 'Event Support' %}selected{% endif %}>Event Support</option>
-                    <option value="Other" {% if request.args.get('type') == 'Other' %}selected{% endif %}>Other</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="status" class="form-select">
-                    <option value="">All Statuses</option>
-                    <option value="Pending" {% if request.args.get('status') == 'Pending' %}selected{% endif %}>Pending</option>
-                    <option value="Under Review" {% if request.args.get('status') == 'Under Review' %}selected{% endif %}>Under Review</option>
-                    <option value="Approved" {% if request.args.get('status') == 'Approved' %}selected{% endif %}>Approved</option>
-                    <option value="Denied" {% if request.args.get('status') == 'Denied' %}selected{% endif %}>Denied</option>
-                    <option value="Paid" {% if request.args.get('status') == 'Paid' %}selected{% endif %}>Paid</option>
-                    <option value="Completed" {% if request.args.get('status') == 'Completed' %}selected{% endif %}>Completed</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Filter</button>
-            </div>
-            <div class="col-md-1">
-                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100">Clear</a>
-            </div>
-            <div class="col-md-2 text-end">
-                <a href="{{ url_for('add_request') }}" class="btn btn-success"><i class="bi bi-plus-lg"></i> New</a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Requests Table -->
-<div class="card">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Organization</th>
-                    <th>Type</th>
-                    <th>Date</th>
-                    <th>Amt Requested</th>
-                    <th>Amt Approved</th>
-                    <th>Status</th>
-                    <th>Requested By</th>
-                    <th>Marketing</th>
-                    <th>PDF</th>
-                    <th style="min-width: 180px;">Quick Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for req in requests %}
-                <tr class="{% if req.status == 'Approved' and not req.submitted_to_accounting %}highlight-accounting{% endif %} {% if req.marketing_follow_up != 'Completed' %}highlight-marketing{% endif %}">
-                    <td class="clickable-row" data-href="{{ url_for('view_request', id=req.id) }}">
-                        <strong>{{ req.organization }}</strong>
-                    </td>
-                    <td class="clickable-row" data-href="{{ url_for('view_request', id=req.id) }}"><small>{{ req.request_type }}</small></td>
-                    <td class="clickable-row" data-href="{{ url_for('view_request', id=req.id) }}"><small>{{ req.date_requested.strftime('%m/%d/%Y') if req.date_requested else '-' }}</small></td>
-                    <td class="clickable-row" data-href="{{ url_for('view_request', id=req.id) }}">${{ "{:,.2f}".format(req.requested_amount) }}</td>
-                    <td class="clickable-row" data-href="{{ url_for('view_request', id=req.id) }}">${{ "{:,.2f}".format(req.approved_amount) }}</td>
-                    <td class="clickable-row" data-href="{{ url_for('view_request', id=req.id) }}">
-                        <span class="badge status-badge 
-                            {% if req.status == 'Pending' %}bg-secondary
-                            {% elif req.status == 'Under Review' %}bg-info
-                            {% elif req.status == 'Approved' %}bg-success
-                            {% elif req.status == 'Denied' %}bg-danger
-                            {% elif req.status == 'Paid' %}bg-primary
-                            {% elif req.status == 'Completed' %}bg-dark
-                            {% endif %}">
-                            {{ req.status }}
-                        </span>
-                    </td>
-                    <td class="clickable-row" data-href="{{ url_for('view_request', id=req.id) }}"><small>{{ req.requested_by }}</small></td>
-                    <td class="clickable-row" data-href="{{ url_for('view_request', id=req.id) }}">
-                        <small class="{% if req.marketing_follow_up == 'Completed' %}text-success{% elif req.marketing_follow_up == 'In Progress' %}text-warning{% else %}text-danger{% endif %}">
-                            {{ req.marketing_follow_up }}
-                        </small>
-                    </td>
-                    <td>
-                        {% if req.pdf_filename %}
-                            <i class="bi bi-file-earmark-pdf-fill text-danger" title="PDF attached"></i>
-                        {% else %}
-                            <i class="bi bi-file-earmark text-muted" title="No PDF"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                            {% if req.status != 'Approved' %}
-                            <form action="{{ url_for('quick_action', id=req.id) }}" method="POST" style="display:inline;">
-                                <input type="hidden" name="action" value="approve">
-                                <button type="submit" class="btn btn-success btn-sm" title="Approve">
-                                    <i class="bi bi-check-lg"></i> Approve
-                                </button>
-                            </form>
-                            {% endif %}
-                            {% if req.status != 'Denied' %}
-                            <form action="{{ url_for('quick_action', id=req.id) }}" method="POST" style="display:inline;">
-                                <input type="hidden" name="action" value="deny">
-                                <button type="submit" class="btn btn-danger btn-sm" title="Deny">
-                                    <i class="bi bi-x-lg"></i> Deny
-                                </button>
-                            </form>
-                            {% endif %}
-                            <a href="{{ url_for('view_request', id=req.id) }}" class="btn btn-outline-primary btn-sm" title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="{{ url_for('edit_request', id=req.id) }}" class="btn btn-outline-secondary btn-sm" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% if not requests %}
-                <tr>
-                    <td colspan="10" class="text-center py-4 text-muted">No records found.</td>
-                </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Chart Data for JavaScript -->
-<script type="application/json" id="chartData">
-{
-    "monthly": {
-        {% for month, amount in monthly_data.items() | sort %}
-        "{{ month }}": {{ amount }}{{ "," if not loop.last else "" }}
-        {% endfor %}
-    },
-    "types": {
-        {% for type, count in type_counts.items() %}
-        "{{ type }}": {{ count }}{{ "," if not loop.last else "" }}
-        {% endfor %}
-    },
-    "status": {
-        {% for status, count in status_counts.items() %}
-        "{{ status }}": {{ count }}{{ "," if not loop.last else "" }}
-        {% endfor %}
-    }
-}
-</script>
-
-{% endblock %}
-
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Clickable rows - but not on action buttons
-    document.querySelectorAll('.clickable-row').forEach(row => {
-        row.style.cursor = 'pointer';
-        row.addEventListener('click', function(e) {
-            // Don't navigate if clicking buttons, forms, or icons in action column
-            if (e.target.closest('button') || e.target.closest('form') || e.target.closest('a') || e.target.tagName === 'I') return;
-            window.location = this.dataset.href;
-        });
-    });
-    
-    // Chart data
-    const chartData = JSON.parse(document.getElementById('chartData').textContent);
-    
-    // Monthly Approved Chart
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    const monthlyLabels = Object.keys(chartData.monthly).sort();
-    const monthlyValues = monthlyLabels.map(k => chartData.monthly[k]);
-    
-    if (monthlyLabels.length > 0) {
-        new Chart(monthlyCtx, {
-            type: 'bar',
-            data: {
-                labels: monthlyLabels,
-                datasets: [{
-                    label: 'Approved $',
-                    data: monthlyValues,
-                    backgroundColor: '#28a745',
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-    } else {
-        document.getElementById('monthlyChart').parentElement.querySelector('h6').textContent += ' - No data';
-    }
-    
-    // Type Distribution Chart
-    const typeCtx = document.getElementById('typeChart').getContext('2d');
-    const typeLabels = Object.keys(chartData.types);
-    const typeValues = typeLabels.map(k => chartData.types[k]);
-    
-    if (typeValues.some(v => v > 0)) {
-        new Chart(typeCtx, {
-            type: 'doughnut',
-            data: {
-                labels: typeLabels,
-                datasets: [{
-                    data: typeValues,
-                    backgroundColor: ['#0d6efd', '#198754', '#dc3545', '#6c757d']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
-            }
-        });
-    }
-    
-    // Status Breakdown Chart
-    const statusCtx = document.getElementById('statusChart').getContext('2d');
-    const statusLabels = Object.keys(chartData.status);
-    const statusValues = statusLabels.map(k => chartData.status[k]);
-    const statusColors = {
-        'Pending': '#6c757d',
-        'Under Review': '#0dcaf0',
-        'Approved': '#198754',
-        'Denied': '#dc3545',
-        'Paid': '#0d6efd',
-        'Completed': '#343a40'
-    };
-    
-    new Chart(statusCtx, {
-        type: 'pie',
-        data: {
-            labels: statusLabels,
-            datasets: [{
-                data: statusValues,
-                backgroundColor: statusLabels.map(l => statusColors[l] || '#6c757d')
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
-        }
-    });
-});
-</script>
 {% endblock %}
