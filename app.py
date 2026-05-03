@@ -152,6 +152,36 @@ def delete_request(id):
 def import_csv():
     if request.method == 'POST':
         file = request.files.get('file')
+
+        if not file:
+            flash('No file uploaded')
+            return redirect(url_for('import_csv'))
+
+        try:
+            stream = file.stream.read().decode("UTF8")
+            csv_input = csv.DictReader(stream.splitlines())
+
+            for row in csv_input:
+                new_req = SponsorshipRequest(
+                    organization=row.get('organization', 'Unknown'),
+                    request_type=row.get('request_type', 'Other'),
+                    requested_amount=float(row.get('requested_amount') or 0),
+                    approved_amount=float(row.get('approved_amount') or 0),
+                    status=row.get('status', 'Pending')
+                )
+                db.session.add(new_req)
+
+            db.session.commit()
+            flash('Import successful!')
+
+        except Exception as e:
+            flash(f'Error during import: {str(e)}')
+
+        return redirect(url_for('dashboard'))
+
+    return render_template('import.html')
+    if request.method == 'POST':
+        file = request.files.get('file')
         if not file:
             flash('No file uploaded')
             return redirect(url_for('import_csv'))
