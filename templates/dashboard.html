@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-2 mb-3">
+        <div class="card metric-card bg-primary text-white h-100 p-3">
+            <h6 class="card-subtitle mb-2">Total Requested</h6>
+            <h4 class="card-title">${{ "{:,.2f}".format(total_requested) }}</h4>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card metric-card bg-success text-white h-100 p-3">
+            <h6 class="card-subtitle mb-2">Total Approved</h6>
+            <h4 class="card-title">${{ "{:,.2f}".format(total_approved) }}</h4>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card metric-card bg-warning text-dark h-100 p-3">
+            <h6 class="card-subtitle mb-2">Pending</h6>
+            <h4 class="card-title">{{ pending_count }}</h4>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card metric-card bg-info text-white h-100 p-3">
+            <h6 class="card-subtitle mb-2">Approved #</h6>
+            <h4 class="card-title">{{ approved_count }}</h4>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 p-3">
+            <h6 class="card-subtitle mb-2 text-muted">Monthly Approved ($)</h6>
+            <div style="font-size: 0.9rem;">
+                {% for month, amount in monthly_data.items() | sort(reverse=True) %}
+                    <span class="badge bg-light text-dark border me-1">{{ month }}: ${{ "{:,.0f}".format(amount) }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="row g-3" method="GET">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Search Organization..." value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="col-md-2">
+                <select name="type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="Sponsorship" {% if request.args.get('type') == 'Sponsorship' %}selected{% endif %}>Sponsorship</option>
+                    <option value="Donation" {% if request.args.get('type') == 'Donation' %}selected{% endif %}>Donation</option>
+                    <option value="Event Support" {% if request.args.get('type') == 'Event Support' %}selected{% endif %}>Event Support</option>
+                    <option value="Other" {% if request.args.get('type') == 'Other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Pending" {% if request.args.get('status') == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Under Review" {% if request.args.get('status') == 'Under Review' %}selected{% endif %}>Under Review</option>
+                    <option value="Approved" {% if request.args.get('status') == 'Approved' %}selected{% endif %}>Approved</option>
+                    <option value="Denied" {% if request.args.get('status') == 'Denied' %}selected{% endif %}>Denied</option>
+                    <option value="Paid" {% if request.args.get('status') == 'Paid' %}selected{% endif %}>Paid</option>
+                    <option value="Completed" {% if request.args.get('status') == 'Completed' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+            <div class="col-md-1">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100">Clear</a>
+            </div>
+            <div class="col-md-2 text-end">
+                <a href="{{ url_for('add_request') }}" class="btn btn-success"><i class="bi bi-plus-lg"></i> New</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Organization</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Amt Requested</th>
+                    <th>Amt Approved</th>
+                    <th>Status</th>
+                    <th>Requested By</th>
+                    <th>Marketing</th>
+                    <th>Accnt.</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr class="{% if req.status == 'Approved' and not req.submitted_to_accounting %}highlight-accounting{% endif %} {% if req.marketing_follow_up != 'Completed' %}highlight-marketing{% endif %}">
+                    <td><strong>{{ req.organization }}</strong></td>
+                    <td><small>{{ req.request_type }}</small></td>
+                    <td><small>{{ req.date_requested.strftime('%m/%d/%Y') if req.date_requested else '-' }}</small></td>
+                    <td>${{ "{:,.2f}".format(req.requested_amount) }}</td>
+                    <td>${{ "{:,.2f}".format(req.approved_amount) }}</td>
+                    <td>
+                        <span class="badge status-badge 
+                            {% if req.status == 'Pending' %}bg-secondary
+                            {% elif req.status == 'Under Review' %}bg-info
+                            {% elif req.status == 'Approved' %}bg-success
+                            {% elif req.status == 'Denied' %}bg-danger
+                            {% elif req.status == 'Paid' %}bg-primary
+                            {% elif req.status == 'Completed' %}bg-dark
+                            {% endif %}">
+                            {{ req.status }}
+                        </span>
+                    </td>
+                    <td><small>{{ req.requested_by }}</small></td>
+                    <td>
+                        <small class="{% if req.marketing_follow_up == 'Completed' %}text-success{% elif req.marketing_follow_up == 'In Progress' %}text-warning{% else %}text-danger{% endif %}">
+                            {{ req.marketing_follow_up }}
+                        </small>
+                    </td>
+                    <td>
+                        {% if req.submitted_to_accounting %}
+                            <i class="bi bi-check-circle-fill text-success" title="Submitted on {{ req.date_submitted_to_accounting }}"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle text-muted"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('edit_request', id=req.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not requests %}
+                <tr>
+                    <td colspan="10" class="text-center py-4 text-muted">No records found.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
