@@ -222,9 +222,14 @@ def process_import():
     return redirect(url_for('dashboard'))
 from models import User, SponsorshipRequest
 
-@app.before_first_request
+_tables_created = False
+
+@app.before_request
 def create_tables():
-    db.create_all()
+    global _tables_created
+    if not _tables_created:
+        db.create_all()
+        _tables_created = True
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
