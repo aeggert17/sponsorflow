@@ -240,33 +240,37 @@ def import_csv():
             csv_input = csv.DictReader(stream.splitlines())
 
             for row in csv_input:
-                raw_status = get_csv_value(row, "Approval", "Status", "status")
+                count = 0
 
-                new_req = SponsorshipRequest(
-                    organization=get_csv_value(row, "Business/Organization", "Organization", "organization") or "Unknown",
-                    request_type=get_csv_value(row, "Type of Request", "Request Type", "request_type") or "Other",
-                    date_requested=parse_date(get_csv_value(row, "Date Requested", "date_requested")),
-                    event_date=parse_date(get_csv_value(row, "Event Date", "event_date")),
-                    requested_amount=parse_money(get_csv_value(row, "Suggested Support", "Requested Amount", "requested_amount")),
-                    approved_amount=parse_money(get_csv_value(row, "Actual Support", "Approved Amount", "approved_amount")),
-                    status=normalize_status(raw_status),
-                    requested_by=get_csv_value(row, "Request Originator", "Requested By", "requested_by"),
-                    approved_by=get_csv_value(row, "Approved by", "Approved By", "approved_by"),
-                    comments=get_csv_value(row, "Comments", "comments"),
-                    flyer_link=get_csv_value(row, "Flyer Link", "flyer_link"),
-                    marketing_follow_up=get_csv_value(row, "Marketing Follow-up", "Marketing Follow-Up", "marketing_follow_up") or "Not Started",
-                    submitted_to_accounting=True
-                    if get_csv_value(row, "Submitted to Accounting", "submitted_to_accounting").lower()
-                    in ["yes", "y", "true", "1"]
-                    else False,
-                    date_submitted_to_accounting=parse_date(
-                        get_csv_value(row, "Date submitted", "Date Submitted", "date_submitted_to_accounting")
-                    ),
-                )
+for row in csv_input:
+    raw_status = get_csv_value(row, "Approval", "Status", "status")
 
-                db.session.add(new_req)
+    new_req = SponsorshipRequest(
+        organization=get_csv_value(row, "Business/Organization", "Organization", "organization") or "Unknown",
+        request_type=get_csv_value(row, "Type of Request", "Request Type", "request_type") or "Other",
+        date_requested=parse_date(get_csv_value(row, "Date Requested", "date_requested")),
+        event_date=parse_date(get_csv_value(row, "Event Date", "event_date")),
+        requested_amount=parse_money(get_csv_value(row, "Suggested Support", "Requested Amount", "requested_amount")),
+        approved_amount=parse_money(get_csv_value(row, "Actual Support", "Approved Amount", "approved_amount")),
+        status=normalize_status(raw_status),
+        requested_by=get_csv_value(row, "Request Originator", "Requested By", "requested_by"),
+        approved_by=get_csv_value(row, "Approved by", "Approved By", "approved_by"),
+        comments=get_csv_value(row, "Comments", "comments"),
+        flyer_link=get_csv_value(row, "Flyer Link", "flyer_link"),
+        marketing_follow_up=get_csv_value(row, "Marketing Follow-up", "Marketing Follow-Up", "marketing_follow_up") or "Not Started",
+        submitted_to_accounting=True if get_csv_value(row, "Submitted to Accounting", "submitted_to_accounting").lower() in ["yes", "y", "true", "1"] else False,
+        date_submitted_to_accounting=parse_date(get_csv_value(row, "Date submitted", "Date Submitted", "date_submitted_to_accounting")),
+    )
 
-            db.session.commit()
+    db.session.add(new_req)
+    count += 1
+
+    # 💡 COMMIT EVERY 25 ROWS (IMPORTANT)
+    if count % 25 == 0:
+        db.session.commit()
+
+# final commit
+db.session.commit()
             flash("Import successful!")
 
         except Exception as e:
