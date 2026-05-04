@@ -218,7 +218,14 @@ def import_csv():
                     request_type=row.get('request_type', 'Other'),
                     requested_amount=float(row.get('requested_amount') or 0),
                     approved_amount=float(row.get('approved_amount') or 0),
-                    status=row.get('status', 'Pending')
+                    raw_status = get(row, "Approval", "Status", "status").lower()
+
+if raw_status in ["yes", "approved", "y"]:
+    status = "Approved"
+elif raw_status in ["no", "denied", "n"]:
+    status = "Denied"
+else:
+    status = "Pending"
                 )
                 db.session.add(new_req)
 
