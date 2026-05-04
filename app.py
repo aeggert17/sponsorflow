@@ -213,8 +213,12 @@ def import_csv():
             csv_input = csv.DictReader(stream.splitlines())
 
             for row in csv_input:
-               if raw_status in ["yes", "approved", "y"]:
+            if raw_status in ["yes", "approved", "y"]:
     status = "Approved"
+elif raw_status in ["no", "denied", "n"]:
+    status = "Denied"
+else:
+    status = "Pending"
 elif raw_status in ["no", "denied", "n"]:
     status = "Denied"
 else:
