@@ -21,6 +21,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+
 with app.app_context():
     db.create_all()
 
@@ -65,14 +66,19 @@ def normalize_status(value):
 
     if value in ["yes", "approved", "approve", "y"]:
         return "Approved"
+
     if value in ["no", "denied", "deny", "n"]:
         return "Denied"
+
     if value in ["pending"]:
         return "Pending"
+
     if value in ["paid"]:
         return "Paid"
+
     if value in ["completed", "complete"]:
         return "Completed"
+
     if value in ["under review", "review"]:
         return "Under Review"
 
@@ -218,6 +224,7 @@ def edit_request(id):
 @login_required
 def delete_request(id):
     req = SponsorshipRequest.query.get_or_404(id)
+
     db.session.delete(req)
     db.session.commit()
 
@@ -235,43 +242,49 @@ def import_csv():
             flash("No file uploaded.")
             return redirect(url_for("import_csv"))
 
-try:
-    stream = file.stream.read().decode("utf-8-sig")
-    csv_input = csv.DictReader(stream.splitlines())
+        try:
+            stream = file.stream.read().decode("utf-8-sig")
+            csv_input = csv.DictReader(stream.splitlines())
 
-    count = 0
+            count = 0
 
-    for row in csv_input:
-        raw_status = get_csv_value(row, "Approval", "Status", "status")
+            for row in csv_input:
+                raw_status = get_csv_value(row, "Approval", "Status", "status")
 
-        new_req = SponsorshipRequest(
-            organization=get_csv_value(row, "Business/Organization", "Organization", "organization") or "Unknown",
-            request_type=get_csv_value(row, "Type of Request", "Request Type", "request_type") or "Other",
-            date_requested=parse_date(get_csv_value(row, "Date Requested", "date_requested")),
-            event_date=parse_date(get_csv_value(row, "Event Date", "event_date")),
-            requested_amount=parse_money(get_csv_value(row, "Suggested Support", "Requested Amount", "requested_amount")),
-            approved_amount=parse_money(get_csv_value(row, "Actual Support", "Approved Amount", "approved_amount")),
-            status=normalize_status(raw_status),
-            requested_by=get_csv_value(row, "Request Originator", "Requested By", "requested_by"),
-            approved_by=get_csv_value(row, "Approved by", "Approved By", "approved_by"),
-            comments=get_csv_value(row, "Comments", "comments"),
-            flyer_link=get_csv_value(row, "Flyer Link", "flyer_link"),
-            marketing_follow_up=get_csv_value(row, "Marketing Follow-up", "Marketing Follow-Up", "marketing_follow_up") or "Not Started",
-            submitted_to_accounting=True if get_csv_value(row, "Submitted to Accounting", "submitted_to_accounting").lower() in ["yes","y","true","1"] else False,
-            date_submitted_to_accounting=parse_date(get_csv_value(row, "Date submitted", "Date Submitted", "date_submitted_to_accounting")),
-        )
+                new_req = SponsorshipRequest(
+                    organization=get_csv_value(row, "Business/Organization", "Organization", "organization") or "Unknown",
+                    request_type=get_csv_value(row, "Type of Request", "Request Type", "request_type") or "Other",
+                    date_requested=parse_date(get_csv_value(row, "Date Requested", "date_requested")),
+                    event_date=parse_date(get_csv_value(row, "Event Date", "event_date")),
+                    requested_amount=parse_money(get_csv_value(row, "Suggested Support", "Requested Amount", "requested_amount")),
+                    approved_amount=parse_money(get_csv_value(row, "Actual Support", "Approved Amount", "approved_amount")),
+                    status=normalize_status(raw_status),
+                    requested_by=get_csv_value(row, "Request Originator", "Requested By", "requested_by"),
+                    approved_by=get_csv_value(row, "Approved by", "Approved By", "approved_by"),
+                    comments=get_csv_value(row, "Comments", "comments"),
+                    flyer_link=get_csv_value(row, "Flyer Link", "flyer_link"),
+                    marketing_follow_up=get_csv_value(row, "Marketing Follow-up", "Marketing Follow-Up", "marketing_follow_up") or "Not Started",
+                    submitted_to_accounting=True
+                    if get_csv_value(row, "Submitted to Accounting", "submitted_to_accounting").lower()
+                    in ["yes", "y", "true", "1"]
+                    else False,
+                    date_submitted_to_accounting=parse_date(
+                        get_csv_value(row, "Date submitted", "Date Submitted", "date_submitted_to_accounting")
+                    ),
+                )
 
-        db.session.add(new_req)
-        count += 1
+                db.session.add(new_req)
+                count += 1
 
-        if count % 25 == 0:
+                if count % 25 == 0:
+                    db.session.commit()
+
             db.session.commit()
+            flash("Import successful!")
 
-    db.session.commit()
-    flash("Import successful!")
-
-except Exception as e:
-    flash(f"Error during import: {str(e)}")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error during import: {str(e)}")
 
         return redirect(url_for("dashboard"))
 
