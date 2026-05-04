@@ -172,25 +172,34 @@ def import_csv():
                     return 0
                 return float(value.replace("$", "").replace(",", "").strip() or 0)
 
-            for row in csv_input:
-                new_req = SponsorshipRequest(
-                    organization=get(row, "Business/Organization", "Organization", "organization") or "Unknown",
-                    request_type=get(row, "Type of Request", "Request Type", "request_type") or "Other",
-                    date_requested=None,
-                    event_date=None,
-                    requested_amount=money(get(row, "Suggested Support", "Requested Amount", "requested_amount")),
-                    approved_amount=money(get(row, "Actual Support", "Approved Amount", "approved_amount")),
-                    status=get(row, "Approval", "Status", "status") or "Pending",
-                    requested_by=get(row, "Request Originator", "Requested By", "requested_by"),
-                    approved_by=get(row, "Approved by", "Approved By", "approved_by"),
-                    comments=get(row, "Comments", "comments"),
-                    flyer_link=get(row, "Flyer Link", "flyer_link"),
-                    marketing_follow_up=get(row, "Marketing Follow-up", "Marketing Follow-Up", "marketing_follow_up") or "Not Started",
-                    submitted_to_accounting=True if get(row, "Submitted to Accounting", "submitted_to_accounting").lower() in ["yes", "y", "true", "1"] else False,
-                    date_submitted_to_accounting=None,
-                )
+for row in csv_input:
+    raw_status = get(row, "Approval", "Status", "status").lower()
 
-                db.session.add(new_req)
+    if raw_status in ["yes", "approved", "y"]:
+        status = "Approved"
+    elif raw_status in ["no", "denied", "n"]:
+        status = "Denied"
+    else:
+        status = "Pending"
+
+    new_req = SponsorshipRequest(
+        organization=get(row, "Business/Organization", "Organization", "organization") or "Unknown",
+        request_type=get(row, "Type of Request", "Request Type", "request_type") or "Other",
+        date_requested=None,
+        event_date=None,
+        requested_amount=money(get(row, "Suggested Support", "Requested Amount", "requested_amount")),
+        approved_amount=money(get(row, "Actual Support", "Approved Amount", "approved_amount")),
+        status=status,
+        requested_by=get(row, "Request Originator", "Requested By", "requested_by"),
+        approved_by=get(row, "Approved by", "Approved By", "approved_by"),
+        comments=get(row, "Comments", "comments"),
+        flyer_link=get(row, "Flyer Link", "flyer_link"),
+        marketing_follow_up=get(row, "Marketing Follow-up", "Marketing Follow-Up", "marketing_follow_up") or "Not Started",
+        submitted_to_accounting=True if get(row, "Submitted to Accounting", "submitted_to_accounting").lower() in ["yes", "y", "true", "1"] else False,
+        date_submitted_to_accounting=None,
+    )
+
+    db.session.add(new_req)
 
             db.session.commit()
             flash('Import successful!')
